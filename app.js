@@ -10,10 +10,15 @@ app.set('view engine', 'ejs');
 app.use(express.static('./public'));
 
 //fire controllers
-// app.todoController(app);
 todoController(app);
 
 //listen to port
 app.listen(3000, function(){
     console.log('listening to port 3000');
-})
+});
+
+app.get('/',function(req,res){
+    res.render('index');
+});
+
+

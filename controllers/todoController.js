@@ -15,6 +15,7 @@ var urlencodedParser = bodyParser.urlencoded({extended: false});
 
 module.exports = function(app){
 
+
 app.get('/todo', function(req,res){
     //get data from mongodb and pass it to the view
     Todo.find({}, function(err, data){

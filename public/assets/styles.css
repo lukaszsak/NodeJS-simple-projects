@@ -1,6 +1,6 @@
 body{
     background: #0d1521;
-    font-family: tahoma;
+    /* font-family: tahoma; */
     color: #989898;
 }
 
@@ -11,6 +11,7 @@ body{
     margin: 0 auto;
     padding: 20px;
     box-sizing: border-box;
+    font-family: tahoma;
 }
 
 #todo-table form:after{
@@ -42,13 +43,13 @@ button{
     font-size: 20px;
 }
 
-ul{
+#todo-table ul{
     list-style-type: none;
     padding: 0;
     margin: 0;
 }
 
-li{
+#todo-table li{
     width: 100%;
     padding: 20px;
     box-sizing: border-box;
@@ -58,7 +59,7 @@ li{
     letter-spacing: 1px;
 }
 
-li:hover{
+#todo-table li:hover{
     text-decoration: line-through;
     background: rgba(0,0,0,0.2);
 }
