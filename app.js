@@ -15,12 +15,12 @@ app.use(express.static('public'));
 
 //fire controllers
 todoController(app);
-multichatController(server);
+multichatController(app, server);
 
 //Routes
 app.get('/', function(req,res){
     res.render('index');
 });
-app.get('/multichat', function(req,res){
-    res.render('multichat');
-});
+// app.get('/multichat', function(req,res){
+//     res.render('multichat');
+// });
