@@ -1,24 +1,26 @@
-var express = require('express');
-var todoController = require('./controllers/todoController');
+const express = require('express');
+const todoController = require('./controllers/todoController');
+const multichatController = require('./controllers/multichatController');
 
-var app = express();
+const PORT = process.env.PORT || 3000;
+
+const app = express();
+const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 //set up template engine
 app.set('view engine', 'ejs');
 
 //static files
-app.use(express.static('./public'));
+app.use(express.static('public'));
 
 //fire controllers
 todoController(app);
+multichatController(server);
 
-//listen to port
-app.listen(process.env.PORT || 3000, function(){
-    console.log('listening to port 3000');
-});
-
-app.get('/',function(req,res){
+//Routes
+app.get('/', function(req,res){
     res.render('index');
 });
-
-
+app.get('/multichat', function(req,res){
+    res.render('multichat');
+});
