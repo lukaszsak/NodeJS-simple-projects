@@ -92,3 +92,15 @@ textarea{
     width: 100px;
     height: 100%;
 }
+
+/* users message will be sent to */
+.active-user{
+    color: green;
+    font-style: oblique;
+}
+
+/* users online - we do not send message to them */
+.nonactive-user{
+    color:red;
+}
+

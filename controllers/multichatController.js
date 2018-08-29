@@ -27,25 +27,40 @@ module.exports = function(app, server){
 
     io.on('connection', function(socket){
         console.log('made socket connection', socket.id);
-        // socket.emit('user-list',)
         var user = {socketID: socket.id,username:"Guest"};
         users.push(user);
         updateUsersList();
+        socket.emit('connection',socket.id);
 
         socket.on('chat', function(data){
             io.sockets.emit('chat', data);
+        });
+
+        socket.on('private-chat',function(data){
+            // console.log('private chat received',data);
+            var userSocket;
+            //get socketID for a given user name
+            for(i=0;i<users.length;i++){
+                if(data.receiver == users[i].username){
+                    userSocket = users[i].socketID;
+                    break;
+                }
+            }
+            io.sockets.sockets[userSocket].emit('private-chat',data);
+            socket.emit('private-chat',data);
         });
     
         socket.on('typing', function(data){
             socket.broadcast.emit('typing',data);
         });
 
+        socket.on('typing-private', function(data){
+
+        })
+
         socket.on('userchange', function(data){
             changeUser(socket.id,data);
-            // console.log('user changed name',data,socket.id);
-            // io.sockets.emit('userschange',users);
             updateUsersList();
-
         });
 
         socket.on('disconnect', function(){
@@ -76,5 +91,4 @@ module.exports = function(app, server){
     app.get('/multichat', function(req,res){
         res.render('multichat');
     });
-
 };
