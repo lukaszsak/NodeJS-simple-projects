@@ -11,8 +11,25 @@
     <body>
         <% include partial/nav.ejs %>
         
-        <h1>My todo list</h1>
-        <div id="todo-table">
+        <!-- <h1>My todo list</h1> -->
+        <div class="card bg-light" style="margin: 30px;">
+            <div class="card-body">
+                <div id="todo-table">
+                    <form>
+                        <input type="text" name="item" placeholder="Add new item..." required />
+                        <button type="submit" class="btn btn-primary">Add item</button>
+                    </form>
+                    <ul>
+                        <% for(var i=0; i < todos.length ; i++) { %>
+                            <li><%=todos[i].item%></li>
+                        
+                        <% } %>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- <div id="todo-table">
             <form>
                 <input type="text" name="item" placeholder="Add new item..." required />
                 <button type="submit">Add item</button>
@@ -23,7 +40,7 @@
                 
                 <% } %>
             </ul>
-        </div>
+        </div> -->
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
