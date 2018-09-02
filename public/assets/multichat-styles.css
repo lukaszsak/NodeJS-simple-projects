@@ -11,18 +11,19 @@ h2{
 #mario-chat{
     max-width: 600px;
     margin: 30px auto;
-    border: 1px solid #ddd;
+    border: 2px solid #ddd;
     box-shadow: 1px 3px 5px rgba(0,0,0,0.05);
     border-radius: 2px;
     font-family: 'Nunito';
+    /* background: red; */
     /* overflow: hidden; dodane przeze mnie
     position: absolute; */
 }
 
 #chat-window{
-    height: 400px;
+    /* height: 300px; */
     overflow: auto;
-    background: #f9f9f9;
+    /* background: #f9f9f9; */
 }
 
 #output p{
@@ -73,25 +74,26 @@ button{
 /**********/
 
 
-textarea{
+/* textarea{
     width: 100%;
-}
+} */
 
-.flex-container {
+/* .flex-container {
     display: flex;
     flex-direction: row;
     
-}
+} */
 
 
-#chat-area {
-    
-}
+/* #chat-area {
+    padding: 0px;
+} */
 
-#users-list {
+/* #users-list {
     width: 100px;
     height: 100%;
-}
+    padding: 0px;
+} */
 
 /* users message will be sent to */
 .active-user{
@@ -104,3 +106,20 @@ textarea{
     color:red;
 }
 
+#chatForm{
+    display: none;
+    /* visibility: hidden; */
+}
+#loginInfo{
+    visibility: hidden;
+}
+
+#output{
+    position: relative;
+    overflow: auto;
+}
+
+/* .chat-partner{
+    bg-color: green;
+    
+} */

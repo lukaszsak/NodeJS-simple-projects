@@ -1,102 +1,99 @@
-
-
 //make connection
 var socket =io();
 
-var socketID;
-
 //Query DOM
-var message = document.getElementById('message'),
-    handle = document.getElementById('handle'),
-    btn = document.getElementById('send'),
-    output = document.getElementById('output'),
-    feedback = document.getElementById('feedback'),
-    usersList = document.getElementById('connected-users');
+var $message = $('#message'),
+    $sendBtn = $('#send'),
+    $output = $('#output'),
+    $feedback = $('#feedback'),
+    $users = $('#users-list'),
+
+    $loginBtn = $('#loginBtn'),
+    $username = $('#username');
+
+var chatPartnerID = null;
 
 var privateChat = false;
 // var receiverSocketID = null;
 var receiverName = null;
+var broadcasting = true;
 
 //Emit events
-btn.addEventListener('click', function(){
-    if(privateChat){
-        var data = {
-            // receiverSocketID: receiverSocketID,
-            // senderSocketID: socket.id,
-            receiver: receiverName,
-            message: message.value,
-            handle: handle.value 
-        }
-        socket.emit('private-chat',data);
+
+//Send Message
+$sendBtn.on('click', function(){
+    if(broadcasting){
+        socket.emit('broadcast message',$message.val());
     }else{
-        socket.emit('chat',{
-            message: message.value,
-            handle: handle.value
-        });
+        var chatPartner = $("#"+chatPartnerID).html();
+        socket.emit('send message', chatPartner, $message.val());
     }
-    
-    message.value = "";
-});
-message.addEventListener('keypress', function(){
-    socket.emit('typing',handle.value);
+    $message.val("");
 });
 
-handle.addEventListener('change',function(){
-    socket.emit('userchange',handle.value);
-})
-message.addEventListener('keyup', function(e){
+//Login
+$loginBtn.on('click', function(e){
+    e.preventDefault();
+    socket.emit('new user', $username.val(), function(user){
+        if(user){
+            $("#LoginForm").hide();
+            $("#chatForm").show();
+            document.getElementById("nn").innerHTML = user;
+        }
+    });
+});
+
+////// need improvement - send only to chatPartner or broadcast
+message.addEventListener('keypress', function(){
+    socket.emit('typing',user);
+});
+
+//Bind 'Enter' on 'Message Area' with 'Send' button
+$message.on('keyup', function(e){
     if(e.ctrlKey){
         if(e.keyCode == 13){
             message.value +='\n';
         }
     }
     if(e.keyCode == 13 && !e.ctrlKey){
-        btn.click();
+        $sendBtn.click();
     }
 })
 
 //Listen for events
-socket.on('connection', function(data){
-    socketID = data;
+
+//Update users list
+socket.on('get users', function(users){
+    var usersList = "<li id='broadcast_user' class='list-group-item' onclick='userClick(this.id)' style='color:red;'><strong>BROADCAST</strong></li>";
+    users.forEach(user => {
+        usersList += "<li id='user_"+user+"' class='list-group-item' onclick='userClick(this.id)'>" + user + "</li>";
+    });
+    $users.html(usersList);
 });
 
-socket.on('chat', function(data){
-    feedback.innerHTML = "";
-    output.innerHTML += '<p><strong>' + data.handle + ': </strong>' + data.message + '</p>'
-});
+//select chat Partner
+function userClick(newPartnerID){
+    if(newPartnerID != 'broadcast_user'){
+        broadcasting = false;
+    }else{
+        broadcasting = true;
+    }
+    console.log("broadcasting : ",broadcasting);    
+
+    if(chatPartnerID != null){
+        $("#"+chatPartnerID).removeClass('bg-success');
+    };
+    chatPartnerID = newPartnerID;
+    $("#"+chatPartnerID).addClass('bg-success');
+    $("#chat-partner-header").html('You are chating with <strong>'+$("#"+chatPartnerID).html()+'</strong>');
+}
+
 socket.on('typing', function(data){
     feedback.innerHTML = '<p><em>' + data + ' is typing a message </em></p>';
 });
-socket.on('userschange',function(data){
-    var innerHtml = "";
-    for(i=0;i<data.length;i++){
-        innerHtml +="<li>"+data[i].username+"</li>";
-    }
-    usersList.innerHTML = innerHtml;
-    $('#connected-users > li').addClass('active-user');
 
-    $('#connected-users > li').on('click', function(e){
-        if(privateChat){
-            privateChat = false;
-            $('#connected-users > li').addClass('active-user');
-            console.log('in multichat');
-        }else{
-            privateChat = true;
-            receiverName = e.target.innerHTML;
-            console.log('in private chat with ',receiverName);
-            console.log(e.target);
-            // e.target.style('color','red');
-            $('#connected-users > li').removeClass('active-user');
-            $(this).addClass('active-user');
-            // $(this).css('background-color','red');
-            // $(this).attr("visibility", "0.5");
-
-        }
-    });
-});
-
-socket.on('private-chat', function(data){
-    // console.log('private chat',data);
+socket.on('new message', function(data){
     feedback.innerHTML = "";
-    output.innerHTML += '<p><strong>' + data.handle + ': </strong>' + data.message + '</p>'
+    output.innerHTML += '<p><strong>' + data.user + ': </strong>' + data.msg + '</p>';
+    output.scrollTop = output.scrollHeight;
 });

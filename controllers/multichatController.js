@@ -1,24 +1,8 @@
 const socketIO = require('socket.io');
 
-const users = [];
 
-function changeUser(socketID,user){
-    var newUser = true;
-    for(i=0;i<users.length;i++){
-        if(socketID == users[i].socketID){
-            users[i].username = user;
-            newUser = false;
-            break;
-        }
-    }
-    if(newUser){
-        var user = {
-            socketID: socketID,
-            username: user
-        }
-        users.push(user);
-    }
-}
+const users = [];
+const connections = [];
 
 module.exports = function(app, server){
     
@@ -26,67 +10,63 @@ module.exports = function(app, server){
 
 
     io.on('connection', function(socket){
-        console.log('made socket connection', socket.id);
-        var user = {socketID: socket.id,username:"Guest"};
-        users.push(user);
-        updateUsersList();
-        socket.emit('connection',socket.id);
 
-        socket.on('chat', function(data){
-            io.sockets.emit('chat', data);
+        connections.push(socket);
+        console.log('Connected : %s connections',connections.length);
+
+        //Disconnect
+        socket.on('disconnect', function(data){
+            users.splice(users.indexOf(socket.username), 1);
+            updateUsernames();
+
+            connections.splice(connections.indexOf(socket),1);
+            console.log('Disconnected: %s sockets connected', connections.length);
         });
 
-        socket.on('private-chat',function(data){
-            // console.log('private chat received',data);
-            var userSocket;
-            //get socketID for a given user name
-            for(i=0;i<users.length;i++){
-                if(data.receiver == users[i].username){
-                    userSocket = users[i].socketID;
+        //New User - Login 
+        socket.on('new user', function(username, callback){
+            callback(username);
+            socket.username = username;
+            users.push(username);
+            updateUsernames();
+        });
+
+        //Send Message to all users
+        socket.on('broadcast message', function(message){
+            console.log('broadcast message');
+            io.sockets.emit('new message', {msg: message, user: socket.username});
+        });
+
+        //Send Message to a single user
+        socket.on('send message', function(user, message){
+            //sender - socket.username; receiver - user , msg - message
+            for(i=0;i<connections.length;i++){
+                if(connections[i].username == user){
+                    connections[i].emit('new message', {msg: message, user: socket.username});
                     break;
                 }
             }
-            io.sockets.sockets[userSocket].emit('private-chat',data);
-            socket.emit('private-chat',data);
+            socket.emit('new message', {msg: message, user:socket.username});
         });
-    
+
+        function updateUsernames(){
+            io.sockets.emit('get users', users);
+        };
+
+        //Get a socket of the user
+        function getSocket(username){
+            for(i=0;i<io.sockets.length;i++){
+                if(io.sockets[i].username = username){
+                    return io.sockets[i];
+                }
+            }
+        }
+
         socket.on('typing', function(data){
             socket.broadcast.emit('typing',data);
         });
 
-        socket.on('typing-private', function(data){
-
-        })
-
-        socket.on('userchange', function(data){
-            changeUser(socket.id,data);
-            updateUsersList();
-        });
-
-        socket.on('disconnect', function(){
-            console.log('user disconnected',socket.id);
-            deleteUser(socket.id);
-            updateUsersList();
-        })
-
     });
-
-    function updateUsersList(){
-        io.sockets.emit('userschange',users);
-    }
-
-    function deleteUser(socketID){
-        var index = -1;
-
-        for(i=0;i<users.length;i++){
-            if(users[i].socketID == socketID){
-                index = i;
-            }
-        }
-        if ( index > -1){
-            users.splice(index,1);
-        }
-    }
 
     app.get('/multichat', function(req,res){
         res.render('multichat');
