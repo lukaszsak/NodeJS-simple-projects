@@ -1,24 +1,9 @@
-body{
-    /* font-family: 'Nunito'; */
-}
-
 h2{
     font-size: 18px;
     padding: 10px 20px;
     color: #575ed8;
 }
 
-#mario-chat{
-    max-width: 600px;
-    margin: 30px auto;
-    border: 2px solid #ddd;
-    box-shadow: 1px 3px 5px rgba(0,0,0,0.05);
-    border-radius: 2px;
-    font-family: 'Nunito';
-    /* background: red; */
-    /* overflow: hidden; dodane przeze mnie
-    position: absolute; */
-}
 
 #chat-window{
     /* height: 300px; */
@@ -108,7 +93,6 @@ button{
 
 #chatForm{
     display: none;
-    /* visibility: hidden; */
 }
 #loginInfo{
     visibility: hidden;
@@ -119,7 +103,14 @@ button{
     overflow: auto;
 }
 
-/* .chat-partner{
-    bg-color: green;
-    
-} */
+.hidden{
+    display: none;
+}
+
+.blinker{
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker{
+    50% {opacity: 0;}
+}

@@ -62,8 +62,28 @@ module.exports = function(app, server){
             }
         }
 
-        socket.on('typing', function(data){
+        socket.on('typing broadcast message', function(data){
+            // console.log(data);
+            console.log('typing broadcast messtage');
             socket.broadcast.emit('typing',data);
+        });
+
+        socket.on('typing send message', function(user, data){
+            //sender - socket.username; receiver - user , msg - message
+            // console.log(data);
+            // socket.broadcast.emit('typing',data);
+            console.log('typing send messtage');
+            console.log('user : ',user)
+            console.log('data : ',data)
+
+
+            for(i=0;i<connections.length;i++){
+                if(connections[i].username == user){
+                    connections[i].emit('typing', data);
+                    break;
+                }
+            }
+            // socket.emit('new message', {msg: message, user:socket.username});
         });
 
     });
