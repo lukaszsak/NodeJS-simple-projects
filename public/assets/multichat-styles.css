@@ -82,8 +82,8 @@ button{
 
 /* users message will be sent to */
 .active-user{
-    color: green;
-    font-style: oblique;
+    background-color: green;
+    /* font-style: oblique; */
 }
 
 /* users online - we do not send message to them */

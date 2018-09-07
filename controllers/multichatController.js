@@ -34,12 +34,15 @@ module.exports = function(app, server){
         //Send Message to all users
         socket.on('broadcast message', function(message){
             console.log('broadcast message');
+            console.log('message : ',message)
             io.sockets.emit('new message', {msg: message, user: socket.username});
         });
 
         //Send Message to a single user
         socket.on('send message', function(user, message){
             //sender - socket.username; receiver - user , msg - message
+            console.log('send message')
+            console.log('user',user, '     , message : ', message);
             for(i=0;i<connections.length;i++){
                 if(connections[i].username == user){
                     connections[i].emit('new message', {msg: message, user: socket.username});
@@ -64,7 +67,7 @@ module.exports = function(app, server){
 
         socket.on('typing broadcast message', function(data){
             // console.log(data);
-            console.log('typing broadcast messtage');
+            // console.log('typing broadcast messtage');
             socket.broadcast.emit('typing',data);
         });
 
@@ -72,12 +75,12 @@ module.exports = function(app, server){
             //sender - socket.username; receiver - user , msg - message
             // console.log(data);
             // socket.broadcast.emit('typing',data);
-            console.log('typing send messtage');
-            console.log('user : ',user)
-            console.log('data : ',data)
-
+            // console.log('typing send messtage');
+            // console.log('user : ',user)
+            // console.log('data : ',data)
 
             for(i=0;i<connections.length;i++){
+                // console.log(connections[i].username);
                 if(connections[i].username == user){
                     connections[i].emit('typing', data);
                     break;
