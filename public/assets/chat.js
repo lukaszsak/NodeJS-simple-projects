@@ -82,24 +82,41 @@ var State = function(){
         if(chatPartner == "BROADCAST"){
             /// dla kazdego chata dodaj wiadomosc
             for(var i=0;i<chats.length;i++){
-                chats[i].messages.push({user:data.user, message:data.msg});
+                // chats[i].messages.push({user:data.user, message:data.msg});
+                // chats[i].messages.push({sender:data.user, body:data.msg});
+                chats[i].messages.push({sender: data.msg.sender, body: data.msg.body});
+
             }
         }else{
             var index = chatIndex(chatPartner);
-            chats[chatIndex(chatPartner)].messages.push({user:data.user, message: data.msg});
+            if(index != -1){
+                chats[index].messages.push({sender:data.msg.sender, body: data.msg.body});
+            }else{
+                var chat = {chatPartner: chatPartner, messages:[{sender: data.msg.sender, body: data.msg.body}]};
+                chats.push(chat);
+            }
+            // chats[chatIndex(chatPartner)].messages.push({user:data.user, message: data.msg});
         }
         updateChatsView();
     };
 
     var updateChatsView = function(){
         var index = chatIndex(chatPartnerName);
-        var chat = chats[index].messages;
+        var chat;
+        if(index != -1){    //nie ma  historii chatu z danym chatPartnerem
+            chat = chats[index].messages;
+            // chats.push({chatPartner:chatPartnerName, messages:[]});
+        }else{
+            chat = [];
+        }
+        // var chat = chats[index].messages;
         var html = "";
         for(i=0;i<chat.length;i++){
-            html += "<p><strong>"+chat[i].user+": </strong>"+chat[i].message+"</p>";
+            html += "<p><strong>"+chat[i].sender+": </strong>"+chat[i].body+"</p>";
         }
         $output.html(html);
-        $output.scrollTop($output.height());
+        // $output.scrollTop($output.height());
+        output.scrollTo(0,output.scrollHeight);
     };
 
     var chatIndex = function(username){
@@ -116,7 +133,7 @@ var State = function(){
     var setOnlineUsersCallback = function(onlineusers){
         updateOnlineUsersList(onlineusers);
         updateChatPartner();
-        updateChats();  // Must be after onlineUsers Update !!!
+        // updateChats();  // Must be after onlineUsers Update !!!
         updateOnlineUsersView();
         updateChatPartnerView();
     }
@@ -223,6 +240,9 @@ var State = function(){
         getTyping: () => typing,
         setTyping: (typing) => {isTyping = typing;},
         selectChatPartner : (id) => selectChatPartner(id)
+        
+        // updateChats: updateChats
+
     };
 };
 
@@ -256,12 +276,12 @@ $loginBtn.on('click', function(e){
 
 // Typing a message
 message.addEventListener('keypress', function(e){
-    var username = state.getUserName();
+    // var username = state.getUserName();
     var partner = state.getChatPartnerName();
         if(state.getBroadcasting()){
-            socket.emit('typing broadcast message', username);
+            socket.emit('typing broadcast message');//, username);
         }else{
-            socket.emit('typing send message', partner, username);
+            socket.emit('typing send message', partner);
         }
 });
 
@@ -269,11 +289,15 @@ message.addEventListener('keypress', function(e){
 $sendBtn.on('click', function(){
     //don't send empty message
     if($message.val() != "\n" && $message.val() != ""){
+        var message = {sender: state.getUserName(), body: $message.val()};
         if(state.getBroadcasting()){
-            socket.emit('broadcast message',$message.val());
+            // socket.emit('broadcast message',$message.val());
+            socket.emit('broadcast message',message);
         }else{
             var chatPartner = state.getChatPartnerName();
-            socket.emit('send message', chatPartner, $message.val());
+            // var message = {sender: state.getUserName(), body: $message.val()};
+            socket.emit('send message', chatPartner, message);
+            // socket.emit('send message', chatPartner, $message.val());
         } 
     }
     $message.val("");
@@ -287,12 +311,30 @@ socket.on('get users', function(users){
 });
 
 // Someone is typing to us
-socket.on('typing', function(data){
-    feedback.innerHTML = '<p><em>' + data + ' is typing a message </em></p>';
+socket.on('typing', function(user){
+    feedback.innerHTML = '<p><em>' + user + ' is typing a message </em></p>';
 });
 
 // Received a message
 socket.on('new message', function(data){
+    console.log('data --- new message --- ',data)
     feedback.innerHTML = "";
     state.messageReceived(data);
 });
+
+socket.on('get messages', function(messages){
+    // console.log(messages);
+    var chats = state.getChats();
+    for(i=0;i<messages.length;i++){
+        chats.push(messages[i]);
+        // state.chats.push(messages[i]);
+    }
+    state.setChats(chats);
+    console.log(state.getChats());
+    // state.updateChats();
+    
+})
+
+// socket.on('test', function(){
+//     console.log('test event')
+// })
