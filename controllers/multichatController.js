@@ -110,10 +110,6 @@ module.exports = function(app, server){
             getMessages(username,socket);
         });
 
-        // socket.on('get messages',function(){
-            
-        // })
-
         //Send Message to all users
         socket.on('broadcast message', function(message){
             //update chatu dla wszystkich dostepnych online
@@ -128,11 +124,7 @@ module.exports = function(app, server){
         //Send Message to a single user
         socket.on('send message', function(user, message){
             //Nadawca - socket.username; Odbiorca - user
-
-            ///update w bazie danych dla chatow nadawcy i odbiorcy
-            // dla nadawcy - chatPartnerem bedzie odbiorca,
-            // dla odbiorcy - chatPartnerem bedzie nadawca
-
+            
             //Update chatu nadawcy
             saveMessage(socket.username, user, message);
             //Update chatu odbiorcy
@@ -150,15 +142,6 @@ module.exports = function(app, server){
         function updateUsernames(){
             io.sockets.emit('get users', users);
         };
-
-        //Get a socket of the user
-        // function getSocket(username){
-        //     for(i=0;i<io.sockets.length;i++){
-        //         if(io.sockets[i].username = username){
-        //             return io.sockets[i];
-        //         }
-        //     }
-        // }
 
         socket.on('typing broadcast message', function(){
             socket.broadcast.emit('typing',socket.username);

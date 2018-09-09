@@ -38,7 +38,6 @@ var State = function(){
 
     ///// STATE and VIEW UPDATE FUNCTIONS
 
-
     //get chat with a given user from chats
     function getChat(chatPartner){
         for(i=0;i<chats.length;i++){
@@ -145,25 +144,18 @@ var State = function(){
 
     var updateOnlineUsersList = function(onlineusers){
         var newOnlineUsers = [];
-        console.log('onlineusers in updateOnlineUsersList -- ', onlineusers);
         for(var i= 0;i<onlineusers.length;i++){
-            console.log(onlineusers[i]);
             var index = onlineUserIndex(onlineusers[i]);
             if(index != -1){    //user exists
-                // newOnlineUsers.push(onlineusers[i]);
                 newOnlineUsers.push(onlineUsers[index]);
             }else{  //user doesn't exists
                 newOnlineUsers.push({userName: onlineusers[i], unreadMessage : false});
-                // newOnlineUsers.push({userName: onlineusers[i].userName, unreadMessage : false});
-
             };
         };
         onlineUsers = newOnlineUsers;
-        console.log('updated onlineUsers in updateOnlineUsersList ---- ', onlineUsers);
     };
 
     var updateChatPartner = function(){
-        console.log('chatPartnerName ---  ',chatPartnerName);
         if(onlineUserIndex(chatPartnerName) ==-1){
             setChatPartnerName('BROADCAST');
             setChatPartnerID('broadcast_user');
@@ -171,14 +163,12 @@ var State = function(){
     };
 
     var updateChatPartnerView = function(){
-        console.log('id -chatpartner --- ',state.getChatPartnerID());
         $("#"+state.getChatPartnerID()).addClass('bg-success');
         updateChatsView();
     };
 
     var updateOnlineUsersView = function(){
         var usersList = "<li id='broadcast_user' data-user='BROADCAST' class='list-group-item' onclick='state.selectChatPartner(this.id)' style='color:red;'><strong>BROADCAST</strong></li>";
-        console.log('onlineUsers in updateOnlineUsersView --- ',onlineUsers);
         onlineUsers.forEach(user => {
             if(user.userName != state.getUserName()){
                 var messageIcon = user.unreadMessage==true ? "" : "hidden";
@@ -190,10 +180,7 @@ var State = function(){
 
     var onlineUserIndex = function(username){
         var index = -1;
-        console.log(onlineUsers);
         for(i=0;i<onlineUsers.length;i++){
-            console.log(onlineUsers[i].userName);
-            console.log(username);
             if(onlineUsers[i].userName == username){
                 index = i;
                 break;
