@@ -34,7 +34,6 @@ function saveMessage(chatUser, chatPartner,message){ //message = { sender: , bod
                 data[0].chats.push({chatPartner: chatPartner,messages: [message]});
             }
             Chats.updateOne({user: chatUser},{$set: {chats: data[0].chats}}, function(err,data){
-                // console.log('updated successfullty');           
             })
         }
     });
@@ -43,9 +42,7 @@ function saveMessage(chatUser, chatPartner,message){ //message = { sender: , bod
 //Get all messages of a given user from a database
 function getMessages(chatUser, socket){
     Chats.find({user: chatUser}, function(err,data){
-        // socket.emit('test');
         if(data.length !=0){
-            // console.log(data[0].chats);
             var chats = [];
             for(i=0;i<data[0].chats.length;i++){
                 // var chat = {chatPartner: data[0].chats[i].chatPartner};
@@ -64,10 +61,8 @@ function getMessages(chatUser, socket){
                 chats.push(chat);
             }
             socket.emit('get messages', chats);
-            // socket.emit('get messages',data[0].chats);
             return data[0].chats;
         }else{
-            // console.log('[]')
             socket.emit('get messages', []);
             return [];
         }
@@ -113,26 +108,26 @@ module.exports = function(app, server){
             users.push(username);
             updateUsernames();
             getMessages(username,socket);
-            // var messages = getMessages(username);
-            // console.log('messages', messages);
-            // socket.emit('get messages',messages);
         });
 
-        socket.on('get messages',function(){
+        // socket.on('get messages',function(){
             
-        })
+        // })
 
         //Send Message to all users
         socket.on('broadcast message', function(message){
-            console.log('broadcast message');
-            console.log('message : ',message)
+            //update chatu dla wszystkich dostepnych online
+            for(i=0;i<connections.length;i++){
+                if(connections[i] != socket){
+                    saveMessage(connections[i].username, socket.username, message);
+                }
+            }
             io.sockets.emit('new message', {msg: message, user: socket.username});
         });
 
         //Send Message to a single user
         socket.on('send message', function(user, message){
             //Nadawca - socket.username; Odbiorca - user
-            console.log('message --- ',message);
 
             ///update w bazie danych dla chatow nadawcy i odbiorcy
             // dla nadawcy - chatPartnerem bedzie odbiorca,
@@ -157,17 +152,15 @@ module.exports = function(app, server){
         };
 
         //Get a socket of the user
-        function getSocket(username){
-            for(i=0;i<io.sockets.length;i++){
-                if(io.sockets[i].username = username){
-                    return io.sockets[i];
-                }
-            }
-        }
+        // function getSocket(username){
+        //     for(i=0;i<io.sockets.length;i++){
+        //         if(io.sockets[i].username = username){
+        //             return io.sockets[i];
+        //         }
+        //     }
+        // }
 
         socket.on('typing broadcast message', function(){
-            // console.log(data);
-            // console.log('typing broadcast messtage');
             socket.broadcast.emit('typing',socket.username);
         });
 

@@ -25,7 +25,7 @@ var State = function(){
     /*  STRUCTURE OF single chat in chats
         chat = {
             chatPartner: string,
-            messages: [{user: string, message: string}]
+            messages: [{sender: string, body: string}]
         }
     */
     var onlineUsers = [];
@@ -82,8 +82,6 @@ var State = function(){
         if(chatPartner == "BROADCAST"){
             /// dla kazdego chata dodaj wiadomosc
             for(var i=0;i<chats.length;i++){
-                // chats[i].messages.push({user:data.user, message:data.msg});
-                // chats[i].messages.push({sender:data.user, body:data.msg});
                 chats[i].messages.push({sender: data.msg.sender, body: data.msg.body});
 
             }
@@ -95,7 +93,6 @@ var State = function(){
                 var chat = {chatPartner: chatPartner, messages:[{sender: data.msg.sender, body: data.msg.body}]};
                 chats.push(chat);
             }
-            // chats[chatIndex(chatPartner)].messages.push({user:data.user, message: data.msg});
         }
         updateChatsView();
     };
@@ -105,11 +102,9 @@ var State = function(){
         var chat;
         if(index != -1){    //nie ma  historii chatu z danym chatPartnerem
             chat = chats[index].messages;
-            // chats.push({chatPartner:chatPartnerName, messages:[]});
         }else{
             chat = [];
         }
-        // var chat = chats[index].messages;
         var html = "";
         for(i=0;i<chat.length;i++){
             html += "<p><strong>"+chat[i].sender+": </strong>"+chat[i].body+"</p>";
@@ -125,8 +120,8 @@ var State = function(){
             if(chats[i].chatPartner == username){
                 index = i;
                 break;
-            }
-        }
+            };
+        };
         return index;
     };
 
@@ -136,7 +131,7 @@ var State = function(){
         // updateChats();  // Must be after onlineUsers Update !!!
         updateOnlineUsersView();
         updateChatPartnerView();
-    }
+    };
 
     var updateChats = function(){
         for(var i=0;i<onlineUsers.length;i++){
@@ -144,50 +139,62 @@ var State = function(){
             if(index == -1){ //new user
                 var chat = { chatPartner: onlineUsers[i].userName,messages:[]};
                 chats.push(chat);
-            }
-        }
-    }
+            };
+        };
+    };
 
     var updateOnlineUsersList = function(onlineusers){
         var newOnlineUsers = [];
+        console.log('onlineusers in updateOnlineUsersList -- ', onlineusers);
         for(var i= 0;i<onlineusers.length;i++){
+            console.log(onlineusers[i]);
             var index = onlineUserIndex(onlineusers[i]);
             if(index != -1){    //user exists
-                newOnlineUsers.push(onlineusers[i]);
+                // newOnlineUsers.push(onlineusers[i]);
+                newOnlineUsers.push(onlineUsers[index]);
             }else{  //user doesn't exists
                 newOnlineUsers.push({userName: onlineusers[i], unreadMessage : false});
-            }
-        }
+                // newOnlineUsers.push({userName: onlineusers[i].userName, unreadMessage : false});
+
+            };
+        };
         onlineUsers = newOnlineUsers;
+        console.log('updated onlineUsers in updateOnlineUsersList ---- ', onlineUsers);
     };
 
     var updateChatPartner = function(){
+        console.log('chatPartnerName ---  ',chatPartnerName);
         if(onlineUserIndex(chatPartnerName) ==-1){
             setChatPartnerName('BROADCAST');
             setChatPartnerID('broadcast_user');
-        }
-    }
+        };
+    };
 
     var updateChatPartnerView = function(){
+        console.log('id -chatpartner --- ',state.getChatPartnerID());
         $("#"+state.getChatPartnerID()).addClass('bg-success');
         updateChatsView();
-    }
+    };
 
     var updateOnlineUsersView = function(){
         var usersList = "<li id='broadcast_user' data-user='BROADCAST' class='list-group-item' onclick='state.selectChatPartner(this.id)' style='color:red;'><strong>BROADCAST</strong></li>";
+        console.log('onlineUsers in updateOnlineUsersView --- ',onlineUsers);
         onlineUsers.forEach(user => {
             if(user.userName != state.getUserName()){
                 var messageIcon = user.unreadMessage==true ? "" : "hidden";
                 usersList += "<li id='user_"+user.userName+"' data-user='"+user.userName+"' class='list-group-item' onclick='state.selectChatPartner(this.id)'>" + user.userName + " <i class='fa fa-comment-o "+messageIcon+"'></i></li>";
-            }
+            };
         });
         $users.html(usersList);
-    }
+    };
 
     var onlineUserIndex = function(username){
         var index = -1;
+        console.log(onlineUsers);
         for(i=0;i<onlineUsers.length;i++){
-            if(onlineUsers[i].user == username){
+            console.log(onlineUsers[i].userName);
+            console.log(username);
+            if(onlineUsers[i].userName == username){
                 index = i;
                 break;
             }
@@ -240,9 +247,6 @@ var State = function(){
         getTyping: () => typing,
         setTyping: (typing) => {isTyping = typing;},
         selectChatPartner : (id) => selectChatPartner(id)
-        
-        // updateChats: updateChats
-
     };
 };
 
@@ -276,10 +280,9 @@ $loginBtn.on('click', function(e){
 
 // Typing a message
 message.addEventListener('keypress', function(e){
-    // var username = state.getUserName();
     var partner = state.getChatPartnerName();
         if(state.getBroadcasting()){
-            socket.emit('typing broadcast message');//, username);
+            socket.emit('typing broadcast message');
         }else{
             socket.emit('typing send message', partner);
         }
@@ -291,13 +294,10 @@ $sendBtn.on('click', function(){
     if($message.val() != "\n" && $message.val() != ""){
         var message = {sender: state.getUserName(), body: $message.val()};
         if(state.getBroadcasting()){
-            // socket.emit('broadcast message',$message.val());
             socket.emit('broadcast message',message);
         }else{
             var chatPartner = state.getChatPartnerName();
-            // var message = {sender: state.getUserName(), body: $message.val()};
             socket.emit('send message', chatPartner, message);
-            // socket.emit('send message', chatPartner, $message.val());
         } 
     }
     $message.val("");
@@ -317,24 +317,14 @@ socket.on('typing', function(user){
 
 // Received a message
 socket.on('new message', function(data){
-    console.log('data --- new message --- ',data)
     feedback.innerHTML = "";
     state.messageReceived(data);
 });
 
 socket.on('get messages', function(messages){
-    // console.log(messages);
     var chats = state.getChats();
     for(i=0;i<messages.length;i++){
         chats.push(messages[i]);
-        // state.chats.push(messages[i]);
     }
-    state.setChats(chats);
-    console.log(state.getChats());
-    // state.updateChats();
-    
-})
-
-// socket.on('test', function(){
-//     console.log('test event')
-// })
+    state.setChats(chats); 
+});
